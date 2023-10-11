@@ -1,0 +1,91 @@
+--Dataset: Video Game Sales Data
+--Source: https://www.kaggle.com/datasets/holmjason2/videogamedata
+--Queried using: Jupyter Notebook
+
+-- Select all information for the top ten best-selling games
+-- Order the results from best-selling game down to tenth best-selling
+
+SELECT * 
+FROM game_sales
+ORDER BY games_sold desc
+LIMIT 10
+
+-- Join games_sales and reviews
+-- Select a count of the number of games where both critic_score and user_score are null
+
+SELECT count(g.game)
+FROM game_sales g
+FULL OUTER JOIN
+    reviews r
+ON g.game = r.game
+WHERE critic_score IS NULL and user_score IS NULL
+
+-- Select release year and average critic score for each year, rounded and aliased
+-- Join the game_sales and reviews tables
+-- Group by release year
+-- Order the data from highest to lowest avg_critic_score and limit to 10 results
+
+SELECT year, round(avg(critic_score),2) as avg_critic_score
+FROM game_sales g
+FULL OUTER JOIN reviews r
+ON r.game = g.game
+GROUP BY year
+ORDER BY avg_critic_score desc
+LIMIT 10
+
+
+-- Paste your query from the previous task; update it to add a count of games released in each year called num_games
+-- Update the query so that it only returns years that have more than four reviewed games
+
+SELECT year, round(avg(critic_score),2) as avg_critic_score, count(g.game) AS num_games
+FROM game_sales g
+INNER JOIN reviews r
+ON r.game = g.game
+GROUP BY g.year
+HAVING count(g.game) > 4
+ORDER BY avg_critic_score desc
+LIMIT 10
+
+
+-- Select the year and avg_critic_score for those years that dropped off the list of critic favorites 
+-- Order the results from highest to lowest avg_critic_score
+
+SELECT t.year, t.avg_critic_score
+FROM top_critic_years t
+EXCEPT
+SELECT f.year, f.avg_critic_score
+FROM top_critic_years_more_than_four_games f
+ORDER BY avg_critic_score desc
+
+
+-- Select year, an average of user_score, and a count of games released in a given year, aliased and rounded
+-- Include only years with more than four reviewed games; group data by year
+-- Order data by avg_user_score, and limit to ten results
+
+SELECT g.year, round(avg(user_score),2) as avg_user_score, count(g.game) AS num_games
+FROM game_sales g
+INNER JOIN reviews r
+ON r.game = g.game
+GROUP BY g.year
+HAVING count(g.game)> 4
+ORDER BY avg_user_score desc
+LIMIT 10
+
+-- Create a list of years that appear on both the top_critic_years_more_than_four_games table and the top_user_years_more_than_four_games table
+
+SELECT c.year
+FROM top_critic_years_more_than_four_games c
+INNER JOIN top_user_years_more_than_four_games u
+ON c.year = u.year
+
+-- Select sum of games_sold, aliased as total_games_sold; order results by total_games_sold descending
+-- Filter game_sales based on whether each year is in the list returned in the previous task
+
+SELECT year, sum(games_sold) AS total_games_sold
+FROM game_sales
+WHERE year IN (SELECT c.year
+FROM top_critic_years_more_than_four_games c
+INNER JOIN top_user_years_more_than_four_games u
+ON c.year = u.year)
+GROUP BY year
+ORDER BY total_games_sold desc
