@@ -1,0 +1,42 @@
+--Dataset: Unicorns Database
+--Source: https://app.datacamp.com/learn/projects/1531
+--Queried using: PostgreSQL
+
+-- You have been asked to support an investment firm by analyzing trends in high-growth companies. 
+They are interested in understanding which industries are producing the highest valuations and the rate at which new high-value companies are emerging. 
+Providing them with this information gives them a competitive insight as to industry trends and how they should structure their portfolio looking forward.
+
+
+
+WITH
+	UnicornCounts AS (
+		SELECT i.industry, EXTRACT(year from d.date_joined) AS year, 
+count(distinct i.company_id) AS num_unicorns
+FROM industries i
+INNER JOIN dates d
+ON i.company_id = d.company_id
+WHERE EXTRACT(year from d.date_joined) IN (2019, 2020, 2021)
+GROUP BY i.industry, EXTRACT(year from d.date_joined)
+ORDER BY num_unicorns DESC
+	),
+
+	AverageValuation AS (
+		SELECT i.industry, EXTRACT(year from d.date_joined) AS year, avg(f.valuation)/1000000000 AS average_valuation_billions
+		FROM industries i
+		INNER JOIN dates d
+		ON i.company_id = d.company_id
+		INNER JOIN funding f
+		ON i.company_id = f.company_id
+		WHERE EXTRACT(year from d.date_joined) IN (2019, 2020, 2021)
+		GROUP BY i.industry, EXTRACT(year from d.date_joined)
+	)
+
+SELECT
+	uc.industry, uc.year, uc.num_unicorns, ROUND(av.average_valuation_billions, 2) AS average_valuation_billions
+FROM
+	UnicornCounts uc
+INNER JOIN
+	AverageValuation av
+ON uc.industry = av.industry AND uc.year = av.year
+WHERE uc.industry = 'Fintech' OR uc.industry = 'Internet software & services' OR uc.industry= 'E-commerce & direct-to-consumer'
+ORDER BY uc.year desc, uc.num_unicorns desc
