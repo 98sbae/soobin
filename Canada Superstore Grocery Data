@@ -1,0 +1,34 @@
+--Dataset: Canada Superstore Grocery Data
+--Source: https://www.kaggle.com/datasets/maximsakhan/rc-superstore-grocery-data
+--Queried using: PostgreSQL
+
+-- Find the categories with the biggest difference in price from previous to now.
+
+WITH 
+
+price_changes AS (SELECT category, (current_price - previous_price) AS change_in_price
+FROM products_data
+ORDER BY change_in_price asc)
+
+SELECT category, sum(change_in_price) AS total
+FROM price_changes
+GROUP BY category
+ORDER BY total asc
+
+-- The top 5 categories in order are:
+"Meals, Entrees & Sides"
+"Coffee"
+"Snacks, Cookies & Crackers"
+"Noodles & Noodle Soup"
+"Cereal & Breakfast".
+
+--  What products contribute the most to the top categories’ changes in prices over time?
+
+SELECT name, category, (current_price - previous_price) AS change_in_price
+FROM products_data
+WHERE category IN ('Coffee')
+ORDER BY change_in_price asc
+
+-- Looking at specific items from Meals, Entrees & Sides, it seems that products that have meats such as chicken, pork, or beef, or cheese tend to have the biggest price changes, likely due to fluctuations in prices of these ingredients.
+-- For Coffee, it seems that K Cup Pods changed significantly in pricing, which may reflect sellside/market changes specifically within the K Cup Pods business.
+-- For Noodles & Noodle Soup, again it seems many chicken-based products have gone up in price and that aligns with the change seen for the Meals category.
