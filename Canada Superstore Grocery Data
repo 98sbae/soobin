@@ -31,4 +31,4 @@ ORDER BY change_in_price asc
 
 -- Looking at specific items from Meals, Entrees & Sides, it seems that products that have meats such as chicken, pork, or beef, or cheese tend to have the biggest price changes, likely due to fluctuations in prices of these ingredients.
 -- For Coffee, it seems that K Cup Pods changed significantly in pricing, which may reflect sellside/market changes specifically within the K Cup Pods business.
--- For Noodles & Noodle Soup, again it seems many chicken-based products have gone up in price and that aligns with the change seen for the Meals category.
+-- For Noodles & Noodle Soup, again it seems many chicken-based products have gone down in price and that aligns with the change seen for the Meals category.
