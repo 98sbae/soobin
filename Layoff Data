@@ -1,0 +1,37 @@
+Your company has fallen on hard times, and you have to let some of your employees go. You figure it will be easier to fire an entire department all at once, so now you want to determine which department it's going to be.
+Information about your employees and departments is stored in two tables, Employee and Department, respectively. Here are their structures:
+  Department:
+    id: unique department id
+    name: department name
+  Employee:
+    id: unique employee id
+    full_name: employee's full name
+    department: foreign key referencing Department.id
+    salary: employee's salary
+To choose the unfortunate department, you set a number of criteria: you are willing to get rid of any department that has no more than 5 employees. Among these smaller departments, you will consider those where the total salary of all its employees is maximal. Lastly, to make a tough situation more fair, you decide to make the final choice from the remaining departments at random. Thus, you'd like to write a select statement that lists departments:
+  select all departments with less than 6 employees;
+  sort these departments by the total salary of its workers in descending order (in the case of a tie, the department with the greatest number of employees should go first; if it's still not enough to break a tie, the department with the smallest id should go first);
+  cross out the departments at the even rows and leave only those in the odd positions, to consider them more thoroughly afterwards.
+
+SELECT
+    dep_name,
+    emp_number,
+    total_salary 
+FROM 
+    (SELECT d.name AS dep_name, 
+    COUNT(distinct e.id) as emp_number, 
+    COALESCE(sum(e.salary),0) as total_salary, 
+    ROW_NUMBER() OVER (ORDER by
+COALESCE(SUM(e.salary), 0) desc, count(DISTINCT e.id) desc, d.id asc) as row_num
+    FROM Department d
+    LEFT JOIN Employee e
+    ON d.id = e.department
+    GROUP BY d.id
+    HAVING COUNT(distinct e.id) <= 5)
+AS rankeddepartments
+WHERE 
+    row_num%2 <> 0
+ORDER BY total_salary desc, emp_number desc
+;
+
+
